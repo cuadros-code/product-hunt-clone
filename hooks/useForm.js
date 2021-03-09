@@ -31,10 +31,15 @@ export const useForm = (initialState, validation, fn) => {
         setSubmitForm(true)
     }
 
+    const reset = () => {
+        setValueForm(initialState)
+    }
+
     return {
         valueForm,
         error,
         handleSubmit,
-        handleChange
+        handleChange,
+        reset
     }
 }

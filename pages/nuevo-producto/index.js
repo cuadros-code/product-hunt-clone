@@ -1,31 +1,90 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Layout } from '../../components/layout/Layout'
+import { contextFirebase } from '../../firebase/contextFirebase'
 import { useForm } from '../../hooks/useForm'
 import { validationNewProduct } from '../../validation/validationNewProduct'
+import Router from 'next/router'
+import { addProductFirebase, uploadImage } from '../../firebase/firebase-actions'
+import FileUploader from "react-firebase-file-uploader";
+import { storage } from '../../firebase/config'
 
 const initialState = {
     nombre: '',
     empresa: '',
-    url: '',
+    url: 'https://planetatecnologico.tech/',
     imagen: '',
     descripcion: '',
 }
 
 export default function NuevoProducto() {
 
+    const [nombreImagen, setNombreImagen] = useState('')
+    const [subiendo, setSubiendo] = useState(false)
+    const [progreso, setProgreso] = useState(0)
+    const [urlImagen, setUrlImagen] = useState('')
+
     const [errorState, setError] = useState(null)
+
+    const { userAuth } = useContext(contextFirebase)
+
 
     const addProduct = () => {
 
+        if (!userAuth) {
+            return Router.push('/iniciar-sesion')
+        }
+        const producto = {
+            nombre,
+            empresa,
+            url,
+            urlImagen,
+            descripcion,
+            votos: 0,
+            comentarios: [],
+            creado: Date.now()
+        }
+
+        addProductFirebase(producto)
+        reset()
+        Router.push('/')
     }
 
     const {
         valueForm,
         error,
         handleSubmit,
-        handleChange } = useForm(initialState, validationNewProduct, addProduct)
+        handleChange, reset } = useForm(initialState, validationNewProduct, addProduct)
 
-    const { nombre, empresa, url, imagen, descripcion } = valueForm
+    const { nombre, empresa, url, descripcion } = valueForm
+
+    const handleUploadStart = () => {
+        setProgreso(0)
+        setSubiendo(true)
+    }
+
+    const handleProgress = (progreso) => {
+        setProgreso(progreso)
+    }
+
+    const handleUploadError = (error) => {
+        setSubiendo(error)
+        console.log(error)
+    }
+
+    const handleUploadSuccess = async (nombre) => {
+        setProgreso(100)
+        setSubiendo(false)
+        setNombreImagen(nombre)
+        try {
+            const urlImagenReady = await uploadImage(nombre)
+            setUrlImagen(urlImagenReady)
+        } catch (error) {
+            console.log(error)
+        }
+
+    }
+
+
 
     return (
         <Layout>
@@ -73,15 +132,20 @@ export default function NuevoProducto() {
                             className="campo-formulario"
                         >
                             <label htmlFor="imagen">Imagen</label>
-                            <input
-                                type="file"
+                            <FileUploader
+                                accept="image/*"
+                                randomizeFilename
+                                storageRef={storage.ref('productos')}
+                                onUploadStart={handleUploadStart}
+                                onUploadError={handleUploadError}
+                                onUploadSuccess={handleUploadSuccess}
+                                onProgress={handleProgress}
                                 name="imagen"
                                 id="imagen"
-                                onChange={handleChange}
-                                value={imagen}
+
                             />
                         </div>
-                        {error.imagen && <p className="alerta-error" >{error.imagen}</p>}
+                        {/* {error.imagen && <p className="alerta-error" >{error.imagen}</p>} */}
 
                         <div
                             className="campo-formulario"
@@ -131,6 +195,12 @@ export default function NuevoProducto() {
                 </form>
             </div>
             <style jsx>{`
+
+                fieldset{
+                    font-size: 1rem;
+                    margin-top: 1rem;
+                    border: 1px solid #e1e1e1;
+                }
                 h1{
                     text-align: center;
                     margin-top: 3rem;
@@ -147,7 +217,7 @@ export default function NuevoProducto() {
                 
                 textarea{
                     width: 100%;
-                    height: 90px;
+                    height:110px;
                     resize: none;
                 }
 

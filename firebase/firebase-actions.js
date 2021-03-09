@@ -1,4 +1,4 @@
-import { firebase, db } from './config'
+import { firebase, db, storage } from './config'
 
 
 export const registerEmailAndPassword = async (nombre, email, password) => {
@@ -14,4 +14,36 @@ export const loginWithEmailAndPassword = async (email, password) => {
 
 export const signOutSession = async () => {
     return await firebase.auth().signOut()
+}
+
+export const addProductFirebase = (product) => {
+    db.collection('producto').add(product)
+}
+
+export const uploadImage = (nombre) => {
+    return storage
+        .ref('productos')
+        .child(nombre)
+        .getDownloadURL()
+        .then(url => {
+            return url
+        })
+}
+
+export const obtenerProductoFirebase = async () => {
+
+    const productosSnap = await db.collection('producto')
+        .orderBy('creado', 'desc').get()
+    const productos = []
+
+    productosSnap.forEach(snap => {
+        productos.push({
+            id: snap.id,
+            ...snap.data()
+        })
+    })
+
+    return productos
+
+
 }

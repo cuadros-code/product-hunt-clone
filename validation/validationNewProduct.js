@@ -10,9 +10,9 @@ export const validationNewProduct = (inputs) => {
     if (!inputs.url) {
         errors.url = "La url es obligatorio"
     }
-    if (!inputs.imagen) {
-        errors.imagen = "La url es obligatorio"
-    }
+    // if (!inputs.imagen) {
+    //     errors.imagen = "La Imagen es obligatoria"
+    // }
     if (!inputs.descripcion) {
         errors.descripcion = "La descripción es obligatorio"
     }
