@@ -27,6 +27,7 @@ export const Header = () => {
                         <Link href="/">
                             <p className="logo">P</p>
                         </Link>
+
                         <Buscador />
                         <Nav />
                     </div>

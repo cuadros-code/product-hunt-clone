@@ -55,6 +55,9 @@ a {
   background-color: #da552f !important;
   color: white !important;
 }
+img {
+  max-width: 100%;
+}
 
 .boton {
   font-weight: 700;
@@ -111,7 +114,7 @@ a {
 .contenedor {
   max-width: 100vw;
   width: 95%;
-  padding: 4rem 0;
+  padding: 2rem 0;
   margin: 0 auto;
 }
 .bg-white {

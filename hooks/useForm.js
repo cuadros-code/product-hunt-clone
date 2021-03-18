@@ -24,6 +24,8 @@ export const useForm = (initialState, validation, fn) => {
         })
     }
 
+
+
     const handleSubmit = (e) => {
         e.preventDefault()
         const errorOnValidation = validation(valueForm)

@@ -42,8 +42,13 @@ export const obtenerProductoFirebase = async () => {
             ...snap.data()
         })
     })
-
     return productos
+}
 
+export const obtenerProductoById = async (id) => {
+
+    const query = await db.collection('producto').doc(id)
+    const producto = (await query.get()).data()
+    return producto
 
 }

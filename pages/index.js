@@ -1,11 +1,11 @@
 // import Head from 'next/head'
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Layout } from "../components/layout/Layout";
 import { DetallesProducto } from "../components/ui/DetallesProducto";
 import { obtenerProductoFirebase } from "../firebase/firebase-actions";
 
-export default function Home() {
+const Home = memo(() => {
 
   const [products, setProducts] = useState([])
 
@@ -19,11 +19,19 @@ export default function Home() {
 
   }, [])
 
+
+
   return (
     <Layout>
       <div className="listado-productos">
         <div className="contenedor">
           <ul className="bg-white">
+
+            {
+              products.length === 0 &&
+              <h1>No Hay Productos Registrados</h1>
+            }
+
             {
               products?.map(producto => (
                 <DetallesProducto
@@ -37,4 +45,6 @@ export default function Home() {
       </div>
     </Layout>
   )
-}
+})
+
+export default Home

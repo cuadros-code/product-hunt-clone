@@ -1,10 +1,13 @@
 import React from 'react'
 import { formarDate } from '../../helpers/formatDate'
+import Link from 'next/link'
+import { obtenerProductoFirebase } from '../../firebase/firebase-actions'
+
+
 
 export const DetallesProducto = ({ producto }) => {
 
-
-    const fecha = formarDate(producto.creado)
+    // const fecha = formarDate(producto.creado)
 
     return (
         <>
@@ -17,7 +20,9 @@ export const DetallesProducto = ({ producto }) => {
                             alt=""
                         />
                         <div>
-                            <p className="nombre-producto" >{producto?.nombre}</p>
+                            <Link href="/producto/[id]" as={`/producto/${producto.id}`}>
+                                <p className="nombre-producto" >{producto?.nombre}</p>
+                            </Link>
                             <p className="descripcion-producto" >{producto?.descripcion}</p>
 
                             <button className="btn-comentarios">
@@ -104,4 +109,10 @@ export const DetallesProducto = ({ producto }) => {
             </style>
         </>
     )
+}
+
+
+export async function getServerSideProps() {
+    const producto = await obtenerProductoFirebase()
+    return { props: { producto } }
 }
