@@ -9,7 +9,7 @@ export default function Eror404() {
                 <h1> Page Not Found </h1>
 
                 <Link href='/' >
-                    <button className="boton bg-color" >Volver</button>
+                    <button className="boton bg-color" >Volvel a inicio</button>
                 </Link>
 
             </div>

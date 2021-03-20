@@ -6,8 +6,8 @@ import { loginWithEmailAndPassword } from '../../firebase/firebase-actions'
 import Router from 'next/router'
 
 const initialState = {
-    email: 'kevin@gmail.com',
-    password: '123456'
+    email: '',
+    password: ''
 }
 
 export default function InicioSesion() {

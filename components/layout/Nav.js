@@ -5,7 +5,6 @@ import { contextFirebase } from '../../firebase/contextFirebase'
 export const Nav = () => {
 
     const { userAuth } = useContext(contextFirebase)
-
     return (
         <>
             <nav>

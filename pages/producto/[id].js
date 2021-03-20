@@ -3,123 +3,168 @@ import { useRouter } from 'next/router';
 import Loader from 'react-loader-spinner';
 
 import { Layout } from "../../components/layout/Layout";
-import { obtenerProductoById } from "../../firebase/firebase-actions";
+import {
+	actualizarComentarios,
+	actualizarVotos,
+	obtenerProductoById,
+	eliminarProducto
+} from "../../firebase/firebase-actions";
 
 import { formarDate } from "../../helpers/formatDate";
 import { contextFirebase } from "../../firebase/contextFirebase";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import { FormAddComment } from "../../components/ui/FormAddComment";
+import { ShowComments } from "../../components/ui/ShowComments";
 
 export default function Producto() {
 
-    const [producto, setProducto] = useState([])
+	const [producto, setProducto] = useState([])
+	const { userAuth } = useContext(contextFirebase)
 
-    const { userAuth } = useContext(contextFirebase)
+	const router = useRouter()
+	const { query } = router
 
-    const router = useRouter()
-    const { query } = router
+	useEffect(async () => {
+		if (query.id) {
+			const data = await obtenerProductoById(query.id)
+			if (data?.error) return router.push('/404')
+			if (data) return setProducto(data)
+		}
+	}, [query.id])
 
+	const fechaFormateada = formarDate(producto.creado)
 
-    useEffect(async () => {
-        if (query.id) {
-            const data = await obtenerProductoById(query.id)
-            if (data) {
+	const handleClickVoto = async () => {
+		if (!userAuth) return router.push('iniciar-sesion')
 
-                return setProducto(data)
-            }
-            router.push('/404')
-        }
-    }, [query.id])
+		if (producto.haVotado.includes(userAuth.uid)) {
+			return console.log('usted ya a votado');
+		}
+		const totalVotos = producto.votos + 1
+		const registrarVoto = [...producto.haVotado, userAuth.uid]
+		await actualizarVotos(producto.id, { totalVotos, registrarVoto })
+		setProducto({
+			...producto,
+			votos: totalVotos,
+			haVotado: registrarVoto
+		})
 
-    console.log(producto);
-    const fechaFormateada = formarDate(producto.creado)
+	}
 
+	const onSubmitComment = async (values) => {
+		if (!userAuth) return router.push('iniciar-sesion')
+		values.uid = userAuth.uid
+		values.nombreUsuario = userAuth.displayName
+		values.id = new Date().getTime()
 
-    return (
-        <>
-            <Layout>
-                {producto.length === 0 &&
-                    <div className="loader">
-                        <Loader type="Rings" color="#00BFFF" height={80} width={80} />
-                    </div>
-                }
+		const nuevosComentarios = [values, ...producto.comentarios]
+		await actualizarComentarios(producto.id, nuevosComentarios)
+		setProducto({
+			...producto,
+			comentarios: nuevosComentarios
+		})
+	}
 
-                <div className="contenedor">
-                    <h1>{producto.nombre}</h1>
-
-                    <div className="contenedor-prod">
-                        <div>
-                            <p>Publicado el: {fechaFormateada}</p>
-                            <p>Publicado por: {producto?.creador?.nombre} de {producto?.empresa}</p>
-
-
-                            <img src={producto.urlImagen} alt="" />
-                            <p>{producto.descripcion}</p>
-
-                            <div className="formulario">
-                                {
-                                    userAuth
-
-                                    &&
-                                    <>
-                                        <label htmlFor="comentario">Agrega tu comentario</label>
-                                        <form>
-                                            <input
-                                                type="text"
-                                                id="comentario"
-                                                name="comentario"
-                                            />
-                                            <button
-                                                className="boton bg-color"
-                                                type="submit"
-                                            >
-                                                Agregar
-                                            </button>
-                                        </form>
-                                    </>
-                                }
-                                <h2>Comentarios</h2>
-                                {
-                                    producto.comentarios &&
-                                    producto?.comentarios.map(comentario => (
-                                        <li>
-                                            <p>{comentario.nombre}</p>
-                                            <p>EScrito por: {comentario.nombreUsuario}</p>
-                                        </li>
-                                    ))
-                                }
+	const handleDeleteProduct = async () => {
+		await eliminarProducto(producto.id)
+		router.push('/')
+	}
 
 
-                            </div>
+	return (
+		<>
+			<Layout>
+				{producto.length === 0 &&
+					<div className="loader">
+						<Loader type="Rings" color="#00BFFF" height={80} width={80} />
+					</div>
+				}
+
+				<div className="contenedor">
+					<h1>{producto.nombre}</h1>
+
+					<div className="contenedor-prod">
+						<div>
+
+							<p>Publicado el: {fechaFormateada}</p>
+							<p>Publicado por: {producto?.creador?.nombre} de {producto?.empresa}</p>
 
 
-                        </div>
-                        <aside className="aside">
-                            <a
-                                className="boton bg-color url"
-                                target="_blank"
-                                href={producto.url}
-                            >
-                                Visitar URL
-                            </a>
+							<img src={producto.urlImagen} alt="" />
+							<p>{producto.descripcion}</p>
+
+							<div className="formulario">
+								{
+									userAuth
+
+									&&
+
+									<FormAddComment
+										onSubmitComment={onSubmitComment}
+									/>
+								}
+								<h2>Comentarios</h2>
+								{
+									producto.comentarios &&
+									producto?.comentarios.map(comentario => (
+										<ShowComments
+											comentario={comentario}
+											productoId={producto.creador.id}
+											key={comentario.id}
+										/>
+									))
+								}
 
 
-                            <p className="votos">{producto.votos} Votos</p>
-                            {
-                                userAuth
-                                &&
-                                <button
-                                    className="boton"
-                                >
-                                    Votar
-                                </button>
-                            }
-                        </aside>
-                    </div>
-                </div>
-            </Layout>
+							</div>
 
-            <style jsx>{`
 
+						</div>
+						<aside className="aside">
+
+							{
+								userAuth?.uid === producto?.creador?.id
+								&&
+								<button
+									className="boton bg-color delete-product"
+									onClick={handleDeleteProduct}
+								>
+									Eliminar Producto
+							</button>
+							}
+
+							<a
+								className="boton bg-color url"
+								target="_blank"
+								href={producto.url}
+							>
+								Visitar URL
+              </a>
+
+
+							<p className="votos">{producto.votos} Votos</p>
+							{
+								userAuth
+								&&
+								<button
+									className="boton"
+									onClick={handleClickVoto}
+								>
+									Votar
+                </button>
+							}
+						</aside>
+					</div>
+				</div>
+			</Layout>
+
+			<style jsx>{`
+
+								.delete-product{
+									font-size: 12px;
+									background-color: #e31a40 !important;
+									margin-bottom: 5px;
+								}
                 .votos{
                     text-align: center;
                 }
@@ -151,7 +196,7 @@ export default function Producto() {
                 }
 
                 .formulario{
-                    display: flex;
+                    display: inline-flex;
                     flex-direction: column;
                     width: 100%;
                 }
@@ -174,8 +219,8 @@ export default function Producto() {
                     }
                 }
                 `}
-            </style>
-        </>
+			</style>
+		</>
 
-    )
+	)
 }

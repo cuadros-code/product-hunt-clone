@@ -1,10 +1,42 @@
-import React from 'react'
-
+import React, { useState } from 'react'
+import Router from 'next/router';
 export const Buscador = () => {
+
+    const [valueForm, setValueForm] = useState({
+        buscador: ''
+    })
+    const { buscador } = valueForm
+
+    const handleOnChange = ({ target }) => {
+        setValueForm({
+            ...valueForm,
+            [target.name]: target.value
+        })
+    }
+
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        if (buscador.trim() === '') return
+
+        Router.push({
+            pathname: '/buscar',
+            query: { q: buscador }
+        })
+
+    }
+
     return (
         <>
-            <form action="">
-                <input type="text" placeholder="Buscar Productos" />
+            <form
+                autoComplete="off"
+                onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    placeholder="Buscar Productos"
+                    name="buscador"
+                    onChange={handleOnChange}
+                    value={buscador}
+                />
                 <button>Buscar</button>
             </form>
 

@@ -52,7 +52,8 @@ export const FormularioAgregarProducto = () => {
             creador: {
                 id: userAuth.uid,
                 nombre: userAuth.displayName
-            }
+            },
+            haVotado: []
         }
 
         addProductFirebase(producto)

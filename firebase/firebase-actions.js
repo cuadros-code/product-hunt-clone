@@ -30,25 +30,63 @@ export const uploadImage = (nombre) => {
         })
 }
 
-export const obtenerProductoFirebase = async () => {
+export const obtenerProductoFirebase = async (tipoOrden) => {
 
-    const productosSnap = await db.collection('producto')
-        .orderBy('creado', 'desc').get()
-    const productos = []
+    try {
+        const productosSnap = await db.collection('producto')
+            .orderBy(tipoOrden, 'desc')
+            .get()
 
-    productosSnap.forEach(snap => {
-        productos.push({
-            id: snap.id,
-            ...snap.data()
+        const productos = []
+        productosSnap.forEach(snap => {
+            productos.push({
+                id: snap.id,
+                ...snap.data()
+            })
         })
-    })
-    return productos
+        return productos
+
+    } catch (error) {
+        return {
+            error: true
+        }
+    }
 }
 
 export const obtenerProductoById = async (id) => {
 
-    const query = await db.collection('producto').doc(id)
-    const producto = (await query.get()).data()
-    return producto
+    try {
+        const query = await db.collection('producto').doc(id)
+        const producto = (await query.get()).data()
+        producto.id = (await query.get()).id
+        return producto
+    } catch (error) {
+        console.log(error)
+        return {
+            error: true
+        }
+    }
 
+}
+
+export const actualizarVotos = async (id, data) => {
+    await db.collection('producto')
+        .doc(id)
+        .update({
+            votos: data.totalVotos,
+            haVotado: data.registrarVoto
+        })
+}
+
+
+export const actualizarComentarios = async (id, comentarios) => {
+    await db.collection('producto')
+        .doc(id)
+        .update({ comentarios })
+}
+
+export const eliminarProducto = async (id) => {
+    await db.collection('producto')
+        .doc(id)
+        .delete()
 }

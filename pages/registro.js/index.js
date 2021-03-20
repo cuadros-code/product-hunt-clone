@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import Router from 'next/router'
 import { Layout } from '../../components/layout/Layout'
 import { registerEmailAndPassword } from '../../firebase/firebase-actions'
@@ -7,9 +7,9 @@ import { validationRegister } from '../../validation/validationRegister'
 import { contextFirebase } from '../../firebase/contextFirebase'
 
 const initialState = {
-    nombre: 'kevin',
-    email: 'kevin@gmail.com',
-    password: '123456',
+    nombre: '',
+    email: '',
+    password: '',
 }
 
 export default function Registro() {

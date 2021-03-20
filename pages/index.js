@@ -12,7 +12,7 @@ const Home = memo(() => {
   useEffect(() => {
 
     const obtenerProductos = async () => {
-      const productos = await obtenerProductoFirebase()
+      const productos = await obtenerProductoFirebase('creado')
       setProducts(productos)
     }
     obtenerProductos()
